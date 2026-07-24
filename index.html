@@ -1,0 +1,1694 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>哇咔咔每日推送</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #eae5d9;
+      --paper-raised: #f8f4ea;
+      --ink: #15171c;
+      --ink-soft: #6b6b60;
+      --ink-faint: #9a9a8c;
+      --rule: #d8d4c4;
+      --rule-strong: #15171c;
+      --design: #33417a;
+      --biz: #9c3b2e;
+      --plugin: #1f6e52;
+      --crowd: #8a6a1f;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Noto Sans SC", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    ::selection { background: var(--ink); color: var(--paper); }
+    .mono { font-family: "IBM Plex Mono", "Noto Sans SC", monospace; }
+    .masthead { max-width: 1080px; margin: 0 auto; padding: 48px 28px 0; }
+    .masthead-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; padding-bottom: 20px; }
+    .brand-mark { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 38px; letter-spacing: 0.02em; }
+    .brand-sub { font-size: 13px; color: var(--ink-soft); margin-top: 8px; }
+    .masthead-right { text-align: right; }
+    .today-date { font-size: 12px; color: var(--ink-soft); }
+    .masthead-rule { border: none; border-top: 2px solid var(--rule-strong); border-bottom: 1px solid var(--rule-strong); height: 3px; }
+    .today-strip { display: flex; flex-wrap: wrap; padding: 16px 0 20px; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--ink-soft); }
+    .today-strip .stat { padding: 0 16px; border-left: 1px solid var(--rule); }
+    .today-strip .stat:first-child { border-left: none; padding-left: 0; }
+    .today-strip b { color: var(--ink); font-weight: 600; }
+    .section-nav { max-width: 1080px; margin: 0 auto; padding: 0 28px; display: flex; gap: 6px; border-bottom: 1px solid var(--rule); }
+    .tab-btn {
+      font-family: "Noto Serif SC", serif;
+      font-weight: 600;
+      font-size: 16px;
+      background: transparent;
+      border: none;
+      padding: 12px 4px;
+      margin-right: 32px;
+      cursor: pointer;
+      color: var(--ink-faint);
+      border-bottom: 3px solid transparent;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+    .tab-btn .num { font-family: "IBM Plex Mono", monospace; font-size: 11px; margin-right: 8px; opacity: 0.6; }
+    .tab-btn:hover, .tab-btn.active { color: var(--ink); }
+    .tab-btn.active[data-section="design"] { border-color: var(--design); }
+    .tab-btn.active[data-section="biz"] { border-color: var(--biz); }
+    .tab-btn.active[data-section="plugin"] { border-color: var(--plugin); }
+    .tab-btn.active[data-section="crowd"] { border-color: var(--crowd); }
+    main { max-width: 1080px; margin: 0 auto; padding: 0 28px 100px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 6px;
+    }
+    .select-wrap { position: relative; flex: 0 0 auto; }
+    .select-wrap select {
+      appearance: none;
+      width: auto;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11.5px;
+      border: 1px solid var(--rule-strong);
+      background: var(--paper-raised);
+      padding: 6px 26px 6px 10px;
+      color: var(--ink);
+      cursor: pointer;
+      height: 32px;
+      border-radius: 0;
+    }
+    .select-wrap.source select { min-width: 130px; }
+    .select-wrap.date select { min-width: 116px; }
+    .select-wrap::after {
+      content: "";
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      width: 7px;
+      height: 7px;
+      border-right: 1px solid var(--ink-soft);
+      border-bottom: 1px solid var(--ink-soft);
+      transform: translateY(-65%) rotate(45deg);
+      pointer-events: none;
+    }
+    .toolbar-search { flex: 1; display: flex; min-width: 0; }
+    .toolbar-search input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid var(--rule-strong);
+      border-right: none;
+      background: var(--paper-raised);
+      padding: 0 12px;
+      height: 32px;
+      font-size: 12.5px;
+      color: var(--ink);
+      outline: none;
+      border-radius: 0;
+    }
+    .toolbar-search input::placeholder { color: var(--ink-faint); }
+    .toolbar-search input:focus { background: #fff; }
+    .toolbar-search button {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11.5px;
+      background: var(--ink);
+      color: var(--paper);
+      border: 1px solid var(--ink);
+      padding: 0 16px;
+      height: 32px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .toolbar-search button:hover { opacity: 0.85; }
+    .date-heading { display: flex; align-items: baseline; gap: 12px; padding: 22px 0 12px; }
+    .date-heading h2 { font-family: "Noto Serif SC", serif; font-size: 16px; font-weight: 700; }
+    .date-heading .count { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-faint); }
+    .index-list, .wire-list { border-top: 1px solid var(--rule); }
+    .index-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 16px 4px;
+      border-bottom: 1px solid var(--rule);
+      transition: background 0.12s ease, padding-left 0.16s ease, border-color 0.16s ease;
+    }
+    .index-item:hover, .wire-item:hover, .board-item:hover { background: var(--paper-raised); }
+    .index-item:hover { padding-left: 12px; border-color: var(--ink); }
+    .index-item .marker { color: var(--design); font-size: 11px; margin-top: 6px; flex-shrink: 0; }
+    .index-item .body { flex: 1; }
+    .index-item .source {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--design);
+      margin-bottom: 6px;
+    }
+    .index-item .title {
+      font-family: "Noto Serif SC", serif;
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.5;
+      margin-bottom: 7px;
+    }
+    .index-item:hover .title a { color: var(--design); }
+    .index-item .title a:hover, .wire-item .title:hover, .board-body h3 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .index-item .meta { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-faint); }
+    .wire-item {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      padding: 11px 4px;
+      border-bottom: 1px solid var(--rule);
+      transition: background 0.12s ease, padding-left 0.16s ease, border-color 0.16s ease;
+    }
+    .wire-item:hover { padding-left: 12px; border-color: var(--ink); }
+    .wire-item:hover .title { color: var(--biz); }
+    .wire-item .marker { width: 5px; height: 5px; background: var(--biz); flex-shrink: 0; margin-top: 8px; }
+    .wire-item .body { flex: 1; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .wire-item .title { font-size: 14px; line-height: 1.5; }
+    .wire-item .source {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 10.5px;
+      color: var(--biz);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .board-toolbar {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .board-toolbar .note { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-faint); }
+    .board-item {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 18px;
+      padding: 20px 4px;
+      border-bottom: 1px solid var(--rule);
+      align-items: flex-start;
+      transition: background 0.12s ease, transform 0.16s ease, border-color 0.16s ease;
+      cursor: pointer;
+    }
+    .board-item:hover { transform: translateX(6px); border-color: var(--ink); }
+    .board-rank { font-family: "Noto Serif SC", serif; font-weight: 900; font-size: 28px; color: var(--plugin); line-height: 1; }
+    .board-body h3 { font-family: "Noto Serif SC", serif; font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .board-body p { font-size: 13px; color: var(--ink-soft); line-height: 1.55; margin-bottom: 8px; max-width: 680px; }
+    .hint {
+      position: relative;
+      display: inline-block;
+    }
+    .hint[data-zh]:hover::after,
+    .hint[data-zh]:focus-visible::after {
+      content: attr(data-zh);
+      position: absolute;
+      left: 0;
+      top: calc(100% + 8px);
+      z-index: 8;
+      width: max-content;
+      max-width: min(360px, 72vw);
+      padding: 8px 10px;
+      border: 1px solid var(--rule-strong);
+      background: var(--paper-raised);
+      color: var(--ink);
+      box-shadow: 4px 4px 0 rgba(21, 23, 28, 0.14);
+      font-family: "Noto Sans SC", sans-serif;
+      font-size: 12px;
+      line-height: 1.45;
+      font-weight: 500;
+      text-transform: none;
+      letter-spacing: 0;
+      white-space: normal;
+    }
+    .board-tags span {
+      display: inline-block;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 10px;
+      color: var(--plugin);
+      border: 1px solid var(--plugin);
+      padding: 2px 7px;
+      margin: 0 6px 6px 0;
+      text-transform: uppercase;
+    }
+    .crowd-overview {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 6px;
+    }
+    .crowd-overview .note { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-faint); }
+    .crowd-list { border-top: 1px solid var(--rule); }
+    .crowd-item {
+      display: grid;
+      grid-template-columns: 36px 116px 1fr;
+      gap: 16px;
+      padding: 18px 4px;
+      border-bottom: 1px solid var(--rule);
+      border-left: 2px solid transparent;
+      align-items: flex-start;
+      color: var(--ink);
+      transition: background 0.12s ease, border-color 0.12s ease, padding-left 0.16s ease;
+    }
+    .crowd-item:hover { background: var(--paper-raised); border-left-color: var(--crowd); padding-left: 10px; }
+    .crowd-rank {
+      font-family: "Noto Serif SC", serif;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--crowd);
+      line-height: 1;
+      padding-top: 2px;
+    }
+    .crowd-thumb {
+      width: 116px;
+      height: 76px;
+      border: 1px solid var(--rule);
+      overflow: hidden;
+      background: var(--paper-raised);
+    }
+    .crowd-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    .crowd-thumb.is-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-faint);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 10px;
+    }
+    .crowd-body { min-width: 0; }
+    .crowd-title {
+      font-family: "Noto Serif SC", serif;
+      font-weight: 600;
+      font-size: 15.5px;
+      line-height: 1.4;
+      margin-bottom: 5px;
+    }
+    .crowd-item:hover .crowd-title { text-decoration: underline; text-underline-offset: 3px; }
+    .crowd-meta-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+    .crowd-creator { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-soft); }
+    .crowd-tag {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 9.5px;
+      text-transform: uppercase;
+      color: var(--crowd);
+      border: 1px solid var(--crowd);
+      padding: 1.5px 6px;
+    }
+    .crowd-blurb {
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      line-height: 1.5;
+      margin-bottom: 9px;
+      max-width: 620px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .crowd-stats {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11.5px;
+      color: var(--ink-soft);
+    }
+    .crowd-fund { display: flex; align-items: center; gap: 7px; }
+    .fund-bar { width: 64px; height: 3px; background: var(--rule); position: relative; }
+    .fund-bar-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--crowd); }
+    .crowd-fund .pct { font-weight: 600; color: var(--crowd); }
+    .crowd-stats .sep { color: var(--rule-strong); }
+    .empty-state {
+      padding: 24px 4px;
+      color: var(--ink-faint);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .pager {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 0 6px;
+      border-top: 1px solid var(--rule);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      color: var(--ink-soft);
+    }
+    .pager-actions { display: flex; gap: 8px; }
+    .pager button {
+      min-width: 72px;
+      height: 30px;
+      border: 1px solid var(--rule-strong);
+      background: transparent;
+      color: var(--ink);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .pager button:hover:not(:disabled) { background: var(--ink); color: var(--paper); }
+    .pager button:disabled { cursor: default; color: var(--ink-faint); border-color: var(--rule); }
+    .failures {
+      max-width: 1080px;
+      margin: 0 auto 60px;
+      padding: 18px 28px 0;
+      border-top: 1px solid var(--rule);
+      font-family: "IBM Plex Mono", monospace;
+      color: var(--ink-faint);
+      font-size: 11px;
+    }
+    .failures h2 { color: var(--biz); font-size: 11px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .failures ul { padding-left: 18px; }
+    .is-hidden { display: none !important; }
+    @media (max-width: 720px) {
+      .masthead-top { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .masthead-right { text-align: left; }
+      .section-nav { overflow-x: auto; }
+      .tab-btn { margin-right: 22px; white-space: nowrap; }
+    }
+    @media (max-width: 640px) {
+      .toolbar { flex-wrap: wrap; }
+      .toolbar-search { order: 3; flex-basis: 100%; }
+      .board-item { grid-template-columns: 42px 1fr; gap: 12px; }
+      .crowd-item { grid-template-columns: 28px 76px 1fr; gap: 10px; padding: 14px 2px; }
+      .crowd-thumb { width: 76px; height: 56px; }
+      .crowd-rank { font-size: 16px; }
+      .crowd-title { font-size: 14px; }
+      .crowd-blurb { display: none; }
+      .crowd-stats { gap: 9px; font-size: 10.5px; }
+      .fund-bar { width: 44px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="masthead">
+    <div class="masthead-top">
+      <div>
+        <div class="brand-mark">哇咔咔每日推送</div>
+        <div class="brand-sub">Daily Dispatch - 设计资讯 / 商业快讯 / 插件趋势 / 众筹趋势</div>
+      </div>
+      <div class="masthead-right">
+        <div class="today-date mono">2026 / 07 / 24</div>
+      </div>
+    </div>
+    <hr class="masthead-rule">
+    <div class="today-strip">
+    <span class="stat">设计资讯 <b>28</b> 篇</span>
+    <span class="stat">商业快讯 <b>40</b> 条</span>
+    <span class="stat">插件趋势 <b>20</b> 款</span>
+    <span class="stat">众筹趋势 <b>20</b> 个</span>
+  </div>
+  </div>
+  <nav class="section-nav" id="section-nav">
+    <button class="tab-btn active" data-section="design" type="button"><span class="num">01</span>设计资讯</button><button class="tab-btn " data-section="biz" type="button"><span class="num">02</span>商业快讯</button><button class="tab-btn " data-section="plugin" type="button"><span class="num">03</span>插件趋势</button><button class="tab-btn " data-section="crowd" type="button"><span class="num">04</span>众筹趋势</button>
+  </nav>
+  <main>
+    <section class="panel active" id="panel-design" data-section="design" data-paginated="true" data-page-size="12">
+    <div class="toolbar" data-toolbar="design">
+    <div class="select-wrap source">
+      <select class="source-filter" data-filter="source" aria-label="来源">
+        <option value="">全部来源</option>
+        <option value="HeyShow">HeyShow</option><option value="It&#039;s Nice That">It&#039;s Nice That</option><option value="La Vie">La Vie</option><option value="MOT TIMES">MOT TIMES</option><option value="PPAPER">PPAPER</option><option value="Shopping Design">Shopping Design</option>
+      </select>
+    </div>
+    <div class="select-wrap date">
+      <select class="date-filter" data-filter="date" aria-label="日期">
+        <option value="">全部日期</option>
+        <option value="2026-07-24">2026-07-24</option><option value="2026-07-23">2026-07-23</option><option value="2026-07-22">2026-07-22</option><option value="2026-07-21">2026-07-21</option><option value="2026-07-20">2026-07-20</option><option value="2026-07-13">2026-07-13</option><option value="2026-07-10">2026-07-10</option><option value="2026-07-09">2026-07-09</option><option value="2026-07-08">2026-07-08</option><option value="2026-07-07">2026-07-07</option><option value="2026-07-04">2026-07-04</option><option value="2026-07-01">2026-07-01</option>
+      </select>
+    </div>
+    <div class="toolbar-search">
+      <input class="keyword-filter" data-filter="keyword" type="search" autocomplete="off" placeholder="输入标题关键词搜索">
+      <button class="search-button" type="button">搜索</button>
+    </div>
+  </div>
+    <div class="date-group" data-date-group="2026-07-24">
+      <div class="date-heading">
+        <h2>2026-07-24</h2>
+        <span class="count">5 篇</span>
+      </div>
+      <div class="index-list">
+        <div class="index-item filter-item" data-source="La Vie" data-date="2026-07-24" data-keyword="从小说走向vr与展览！导演陈芯宜威尼斯影展沉浸体验大奖《云在两千米》北师美术馆登场 從小說走向vr與展覽！導演陳芯宜威尼斯影展沉浸體驗大獎《雲在兩千米》北師美術館登場 la vie la vie">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">La Vie</div>
+      <div class="title"><a href="https://www.wowlavie.com/article/260027215" target="_blank" rel="noopener noreferrer">从小说走向VR与展览！导演陈芯宜威尼斯影展沉浸体验大奖《云在两千米》北师美术馆登场</a></div>
+      <div class="meta">作者：La Vie &middot; 2026-07-24</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="Shopping Design" data-date="2026-07-24" data-keyword="抹茶控注意！asahi 推出「泡 matcha」：全开罐设计重现手打泡感，拿铁、可尔必思等新品同步亮相 抹茶控注意！asahi 推出「泡 matcha」：全開罐設計重現手打泡感，拿鐵、可爾必思等新品同步亮相 shopping design shopping design">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">Shopping Design</div>
+      <div class="title"><a href="https://www.shoppingdesign.com.tw/post/view/13623" target="_blank" rel="noopener noreferrer">抹茶控注意！Asahi 推出「泡 MATCHA」：全开罐设计重现手打泡感，拿铁、可尔必思等新品同步亮相</a></div>
+      <div class="meta">作者：Shopping Design &middot; 2026-07-24</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="Shopping Design" data-date="2026-07-24" data-keyword="将时间留给创意！「figma motion」登场：4 大功能 &amp; 自动工具为设计师、社群创作者打造独立高效工作流 將時間留給創意！「figma motion」登場：4 大功能 &amp; 自動工具為設計師、社群創作者打造獨立高效工作流 shopping design shopping design">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">Shopping Design</div>
+      <div class="title"><a href="https://www.shoppingdesign.com.tw/post/view/13630" target="_blank" rel="noopener noreferrer">将时间留给创意！「Figma Motion」登场：4 大功能 &amp; 自动工具为设计师、社群创作者打造独立高效工作流</a></div>
+      <div class="meta">作者：Shopping Design &middot; 2026-07-24</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="Shopping Design" data-date="2026-07-24" data-keyword="乐高打造史上最大可移动装置！136 万颗积木堆出世界杯金杯，梅西、姆巴佩、c 罗化身乐高人偶 樂高打造史上最大可移動裝置！136 萬顆積木堆出世界盃金盃，梅西、姆巴佩、c 羅化身樂高人偶 shopping design shopping design">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">Shopping Design</div>
+      <div class="title"><a href="https://www.shoppingdesign.com.tw/post/view/13624" target="_blank" rel="noopener noreferrer">乐高打造史上最大可移动装置！136 万颗积木堆出世界杯金杯，梅西、姆巴佩、C 罗化身乐高人偶</a></div>
+      <div class="meta">作者：Shopping Design &middot; 2026-07-24</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="La Vie" data-date="2026-07-24" data-keyword="星野集团「界 宫岛」温泉旅馆开幕！静享濑户内海绝景、设有专属露天温泉的特别客房等5大亮点 星野集團「界 宮島」溫泉旅館開幕！靜享瀨戶內海絕景、設有專屬露天溫泉的特別客房等5大亮點 la vie la vie">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">La Vie</div>
+      <div class="title"><a href="https://www.wowlavie.com/article/260027279" target="_blank" rel="noopener noreferrer">星野集团「界 宫岛」温泉旅馆开幕！静享濑户内海绝景、设有专属露天温泉的特别客房等5大亮点</a></div>
+      <div class="meta">作者：La Vie &middot; 2026-07-24</div>
+    </div>
+  </div>
+      </div>
+    </div><div class="date-group" data-date-group="2026-07-23">
+      <div class="date-heading">
+        <h2>2026-07-23</h2>
+        <span class="count">8 篇</span>
+      </div>
+      <div class="index-list">
+        <div class="index-item filter-item" data-source="La Vie" data-date="2026-07-23" data-keyword="诺兰《奥德赛》6大视觉美学亮点！全片imax胶卷拍摄，独眼巨人、女巫瑟西施法、巨人神兵、特洛伊木马等实拍电影魔法 諾蘭《奧德賽》6大視覺美學亮點！全片imax膠卷拍攝，獨眼巨人、女巫瑟西施法、巨人神兵、特洛伊木馬等實拍電影魔法 la vie ian liu">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">La Vie</div>
+      <div class="title"><a href="https://www.wowlavie.com/article/260027281" target="_blank" rel="noopener noreferrer">诺兰《奥德赛》6大视觉美学亮点！全片IMAX胶卷拍摄，独眼巨人、女巫瑟西施法、巨人神兵、特洛伊木马等实拍电影魔法</a></div>
+      <div class="meta">作者：Ian Liu &middot; 2026-07-23</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="La Vie" data-date="2026-07-23" data-keyword="不只陪明星走红毯，也拍片登大银幕！ferragamo微电影《一步一步走》威尼斯影展首映：家族成员主演，探讨初心的重要 不只陪明星走紅毯，也拍片登大銀幕！ferragamo微電影《一步一步走》威尼斯影展首映：家族成員主演，探討初心的重要 la vie ning chi">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">La Vie</div>
+      <div class="title"><a href="https://www.wowlavie.com/article/260027280" target="_blank" rel="noopener noreferrer">不只陪明星走红毯，也拍片登大银幕！Ferragamo微电影《一步一步走》威尼斯影展首映：家族成员主演，探讨初心的重要</a></div>
+      <div class="meta">作者：Ning Chi &middot; 2026-07-23</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="La Vie" data-date="2026-07-23" data-keyword="父亲也曾是少年，复刻青春记忆！nozomi bakery禾波制所推出父亲节限定「青苹果乐园」 父親也曾是少年，復刻青春記憶！nozomi bakery禾波制所推出父親節限定「青蘋果樂園」 la vie la vie">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">La Vie</div>
+      <div class="title"><a href="https://www.wowlavie.com/article/260027283" target="_blank" rel="noopener noreferrer">父亲也曾是少年，复刻青春记忆！NOZOMI BAKERY禾波制所推出父亲节限定「青苹果乐园」</a></div>
+      <div class="meta">作者：La Vie &middot; 2026-07-23</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="It&#039;s Nice That" data-date="2026-07-23" data-keyword="anatomy 为霍尼曼博物馆设计的新宣传活动采用了从博物馆藏品和花园中采集的定制字体 anatomy’s new campaign for the horniman museum is built on a bespoke typeface foraged from the museum’s collections and gardens it&#039;s nice that it&#039;s nice that">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">It&#039;s Nice That</div>
+      <div class="title"><a href="https://www.itsnicethat.com/articles/anatomy-horniman-museum-graphic-design-project-230726" target="_blank" rel="noopener noreferrer">Anatomy 为霍尼曼博物馆设计的新宣传活动采用了从博物馆藏品和花园中采集的定制字体</a></div>
+      <div class="meta">作者：It&#039;s Nice That &middot; 2026-07-23</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="It&#039;s Nice That" data-date="2026-07-23" data-keyword="joanna blemont 为 loewe 将水彩画转变成漫画、杂志和 2,000 帧的电影 joanna blémont transforms watercolour paintings into comics, zines and a 2,000-frame film for loewe it&#039;s nice that it&#039;s nice that">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">It&#039;s Nice That</div>
+      <div class="title"><a href="https://www.itsnicethat.com/articles/joanna-blemont-illustration-discover-230726" target="_blank" rel="noopener noreferrer">Joanna Blemont 为 Loewe 将水彩画转变成漫画、杂志和 2,000 帧的电影</a></div>
+      <div class="meta">作者：It&#039;s Nice That &middot; 2026-07-23</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="It&#039;s Nice That" data-date="2026-07-23" data-keyword="labasad 为其下一批在线硕士生开放申请 labasad opens applications for its next cohort of online master’s students it&#039;s nice that it&#039;s nice that">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">It&#039;s Nice That</div>
+      <div class="title"><a href="https://www.itsnicethat.com/articles/labasad-2026-masters-cohort-sponsored-content-230726" target="_blank" rel="noopener noreferrer">LABASAD 为其下一批在线硕士生开放申请</a></div>
+      <div class="meta">作者：It&#039;s Nice That &middot; 2026-07-23</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="La Vie" data-date="2026-07-23" data-keyword="什幺样的料理才能抚慰人心? 专访晶华轩中餐厨艺总监邬海明，解锁星级主厨宵夜地图！ 什麼樣的料理才能撫慰人心? 專訪晶華軒中餐廚藝總監鄔海明，解鎖星級主廚宵夜地圖！ la vie weihan chang">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">La Vie</div>
+      <div class="title"><a href="https://www.wowlavie.com/article/260027254" target="_blank" rel="noopener noreferrer">什幺样的料理才能抚慰人心? 专访晶华轩中餐厨艺总监邬海明，解锁星级主厨宵夜地图！</a></div>
+      <div class="meta">作者：Weihan Chang &middot; 2026-07-23</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="MOT TIMES" data-date="2026-07-23" data-keyword="布鲁塞尔「kanal 庞毕度中心」11 月开幕！百年汽车工厂化成玻璃宫殿般的当代美术馆｜mot times 明日志 布魯塞爾「kanal 龐畢度中心」11 月開幕！百年汽車工廠化成玻璃宮殿般的當代美術館｜mot times 明日誌 mot times 作者 kura yang">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">MOT TIMES</div>
+      <div class="title"><a href="https://www.mottimes.com/article/detail/6923" target="_blank" rel="noopener noreferrer">布鲁塞尔「KANAL 庞毕度中心」11 月开幕！百年汽车工厂化成玻璃宫殿般的当代美术馆｜MOT TIMES 明日志</a></div>
+      <div class="meta">作者：作者 Kura Yang &middot; 2026-07-23</div>
+    </div>
+  </div>
+      </div>
+    </div><div class="date-group" data-date-group="2026-07-22">
+      <div class="date-heading">
+        <h2>2026-07-22</h2>
+        <span class="count">2 篇</span>
+      </div>
+      <div class="index-list">
+        <div class="index-item filter-item" data-source="PPAPER" data-date="2026-07-22" data-keyword="「创作比拼的，是对细节的掌握」专访王希文：从电影配乐到音乐剧，理解chanel j12 精准背后的深意 「創作比拼的，是對細節的掌握」專訪王希文：從電影配樂到音樂劇，理解chanel j12 精準背後的深意 ppaper jesper shen">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">PPAPER</div>
+      <div class="title"><a href="https://www.ppaper.net/ppaper-talk-chanel-j12-owen-wang/" target="_blank" rel="noopener noreferrer">「创作比拼的，是对细节的掌握」专访王希文：从电影配乐到音乐剧，理解CHANEL J12 精准背后的深意</a></div>
+      <div class="meta">作者：Jesper Shen &middot; 2026-07-22</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="MOT TIMES" data-date="2026-07-22" data-keyword="纽约 new museum 迎来首间餐厅「oberon」！oma 用软木打造宛如洞穴的美术馆新聚点｜mot times 明日志 紐約 new museum 迎來首間餐廳「oberon」！oma 用軟木打造宛如洞穴的美術館新聚點｜mot times 明日誌 mot times 作者 kura yang">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">MOT TIMES</div>
+      <div class="title"><a href="https://www.mottimes.com/article/detail/6920" target="_blank" rel="noopener noreferrer">纽约 New Museum 迎来首间餐厅「Oberon」！OMA 用软木打造宛如洞穴的美术馆新聚点｜MOT TIMES 明日志</a></div>
+      <div class="meta">作者：作者 Kura Yang &middot; 2026-07-22</div>
+    </div>
+  </div>
+      </div>
+    </div><div class="date-group" data-date-group="2026-07-21">
+      <div class="date-heading">
+        <h2>2026-07-21</h2>
+        <span class="count">4 篇</span>
+      </div>
+      <div class="index-list">
+        <div class="index-item filter-item" data-source="It&#039;s Nice That" data-date="2026-07-21" data-keyword="巴勃罗·罗查特 (pablo rochat) 在菲比·布里杰斯 (phoebe bridgers) 的新音乐视频中将亚特兰大郊区变成中世纪幻想 pablo rochat on turning suburban atlanta into a medieval fantasy for phoebe bridgers’ new music video it&#039;s nice that it&#039;s nice that">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">It&#039;s Nice That</div>
+      <div class="title"><a href="https://www.itsnicethat.com/articles/pablo-rochat-lost-boys-film-animation-project-210726" target="_blank" rel="noopener noreferrer">巴勃罗·罗查特 (Pablo Rochat) 在菲比·布里杰斯 (Phoebe Bridgers) 的新音乐视频中将亚特兰大郊区变成中世纪幻想</a></div>
+      <div class="meta">作者：It&#039;s Nice That &middot; 2026-07-21</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="It&#039;s Nice That" data-date="2026-07-21" data-keyword="设计工作室 supersystème 通过将版式视为图像来构建视觉世界 design studio supersystème builds visual worlds by treating typography as image it&#039;s nice that it&#039;s nice that">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">It&#039;s Nice That</div>
+      <div class="title"><a href="https://www.itsnicethat.com/articles/supersyteme-graphic-design-discover-210726" target="_blank" rel="noopener noreferrer">设计工作室 Supersystème 通过将版式视为图像来构建视觉世界</a></div>
+      <div class="meta">作者：It&#039;s Nice That &middot; 2026-07-21</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="MOT TIMES" data-date="2026-07-21" data-keyword="zha × nagami 推出「echo chair」，以 3d 列印演绎几何设计新作｜mot times 明品牌 如果回聲化作一張椅子？zha × nagami 推出「echo chair」，以 3d 列印演繹幾何設計新作｜mot times 明日誌 mot times 作者 kura yang">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">MOT TIMES</div>
+      <div class="title"><a href="https://www.mottimes.com/article/detail/6918" target="_blank" rel="noopener noreferrer">ZHA × Nagami 推出「ECHO Chair」，以 3D 列印演绎几何设计新作｜MOT TIMES 明品牌</a></div>
+      <div class="meta">作者：作者 Kura Yang &middot; 2026-07-21</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="MOT TIMES" data-date="2026-07-21" data-keyword="ikea 推出「可搬着走」家具系列！背着衣柜、拎着边桌，为租屋族打造更轻巧的搬家体验｜mot times 明日志 ikea 推出「可搬著走」家具系列！背著衣櫃、拎著邊桌，為租屋族打造更輕巧的搬家體驗｜mot times 明日誌 mot times 作者 洪雅筠">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">MOT TIMES</div>
+      <div class="title"><a href="https://www.mottimes.com/article/detail/6915" target="_blank" rel="noopener noreferrer">IKEA 推出「可搬着走」家具系列！背着衣柜、拎着边桌，为租屋族打造更轻巧的搬家体验｜MOT TIMES 明日志</a></div>
+      <div class="meta">作者：作者 洪雅筠 &middot; 2026-07-21</div>
+    </div>
+  </div>
+      </div>
+    </div><div class="date-group" data-date-group="2026-07-20">
+      <div class="date-heading">
+        <h2>2026-07-20</h2>
+        <span class="count">2 篇</span>
+      </div>
+      <div class="index-list">
+        <div class="index-item filter-item" data-source="MOT TIMES" data-date="2026-07-20" data-keyword="把高第带回家：从卡佛之家等三大经典建筑，看设计如何走进家具与生活｜mot times 明日志 把高第帶回家：從卡佛之家等三大經典建築，看設計如何走進家具與生活｜mot times 明日誌 mot times 作者 kura yang">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">MOT TIMES</div>
+      <div class="title"><a href="https://www.mottimes.com/article/detail/6914" target="_blank" rel="noopener noreferrer">把高第带回家：从卡佛之家等三大经典建筑，看设计如何走进家具与生活｜MOT TIMES 明日志</a></div>
+      <div class="meta">作者：作者 Kura Yang &middot; 2026-07-20</div>
+    </div>
+  </div><div class="index-item filter-item" data-source="It&#039;s Nice That" data-date="2026-07-20" data-keyword="在蓬勃发展的尼日利亚动画产业中，这些创意人士正在将神话、记忆和恶作剧变成动态图像 in the burgeoning nigerian animation industry, these creatives are turning myth, memory and mischief into moving image it&#039;s nice that it&#039;s nice that">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">It&#039;s Nice That</div>
+      <div class="title"><a href="https://www.itsnicethat.com/articles/the-view-from-lagos-nigerian-animation-200726" target="_blank" rel="noopener noreferrer">在蓬勃发展的尼日利亚动画产业中，这些创意人士正在将神话、记忆和恶作剧变成动态图像</a></div>
+      <div class="meta">作者：It&#039;s Nice That &middot; 2026-07-20</div>
+    </div>
+  </div>
+      </div>
+    </div><div class="date-group" data-date-group="2026-07-13">
+      <div class="date-heading">
+        <h2>2026-07-13</h2>
+        <span class="count">1 篇</span>
+      </div>
+      <div class="index-list">
+        <div class="index-item filter-item" data-source="It&#039;s Nice That" data-date="2026-07-13" data-keyword="小饰品的接管：揭开首尔消费文化的微观趋势 the trinket takeover: unpicking the microtrends of consumer culture in seoul it&#039;s nice that it&#039;s nice that">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">It&#039;s Nice That</div>
+      <div class="title"><a href="https://www.itsnicethat.com/articles/the-view-from-seoul-microtrends-in-seong-su-select-shops-creative-industry-130726" target="_blank" rel="noopener noreferrer">小饰品的接管：揭开首尔消费文化的微观趋势</a></div>
+      <div class="meta">作者：It&#039;s Nice That &middot; 2026-07-13</div>
+    </div>
+  </div>
+      </div>
+    </div><div class="date-group" data-date-group="2026-07-10">
+      <div class="date-heading">
+        <h2>2026-07-10</h2>
+        <span class="count">1 篇</span>
+      </div>
+      <div class="index-list">
+        <div class="index-item filter-item" data-source="Shopping Design" data-date="2026-07-10" data-keyword="免费入场！threads 爆红渐层艺术家谢镇璘个展《光的身后》：将自然光影化为 14 件艺术装置 免費入場！threads 爆紅漸層藝術家謝鎮璘個展《光的身後》：將自然光影化為 14 件藝術裝置 shopping design shopping design">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">Shopping Design</div>
+      <div class="title"><a href="https://www.shoppingdesign.com.tw/post/view/13592?utm_source=sd_banner" target="_blank" rel="noopener noreferrer">免费入场！Threads 爆红渐层艺术家谢镇璘个展《光的身后》：将自然光影化为 14 件艺术装置</a></div>
+      <div class="meta">作者：Shopping Design &middot; 2026-07-10</div>
+    </div>
+  </div>
+      </div>
+    </div><div class="date-group" data-date-group="2026-07-09">
+      <div class="date-heading">
+        <h2>2026-07-09</h2>
+        <span class="count">1 篇</span>
+      </div>
+      <div class="index-list">
+        <div class="index-item filter-item" data-source="HeyShow" data-date="2026-07-09" data-keyword="无法生成的台湾感性｜吴孝儒与郭宪聪谈创作感知 無法生成的台灣感性｜吳孝儒與郭憲聰談創作感知 heyshow 黑秀小編">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">HeyShow</div>
+      <div class="title"><a href="https://heyshow.com/2026/07/09/mobile51230/" target="_blank" rel="noopener noreferrer">无法生成的台湾感性｜吴孝儒与郭宪聪谈创作感知</a></div>
+      <div class="meta">作者：黑秀小編 &middot; 2026-07-09</div>
+    </div>
+  </div>
+      </div>
+    </div><div class="date-group" data-date-group="2026-07-08">
+      <div class="date-heading">
+        <h2>2026-07-08</h2>
+        <span class="count">1 篇</span>
+      </div>
+      <div class="index-list">
+        <div class="index-item filter-item" data-source="Shopping Design" data-date="2026-07-08" data-keyword="台湾第一本饺子专书！《饺子宝岛》收录全台 130 间名店：涵盖 70 年老字号、咖啡馆限定等美味 台灣第一本餃子專書！《餃子寶島》收錄全台 130 間名店：涵蓋 70 年老字號、咖啡館限定等美味 shopping design shopping design">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">Shopping Design</div>
+      <div class="title"><a href="https://www.shoppingdesign.com.tw/post/view/13581?utm_source=sd_banner" target="_blank" rel="noopener noreferrer">台湾第一本饺子专书！《饺子宝岛》收录全台 130 间名店：涵盖 70 年老字号、咖啡馆限定等美味</a></div>
+      <div class="meta">作者：Shopping Design &middot; 2026-07-08</div>
+    </div>
+  </div>
+      </div>
+    </div><div class="date-group" data-date-group="2026-07-07">
+      <div class="date-heading">
+        <h2>2026-07-07</h2>
+        <span class="count">1 篇</span>
+      </div>
+      <div class="index-list">
+        <div class="index-item filter-item" data-source="It&#039;s Nice That" data-date="2026-07-07" data-keyword="“艺术家不需要怜悯，他们需要力量。”艺术家公司能否彻底改变创意业务？ “artists don’t need pity, they need power.” can artist corporations revolutionise creative business? it&#039;s nice that it&#039;s nice that">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">It&#039;s Nice That</div>
+      <div class="title"><a href="https://www.itsnicethat.com/articles/pov-a-corps-artist-corporations-creative-industry-070726" target="_blank" rel="noopener noreferrer">“艺术家不需要怜悯，他们需要力量。”艺术家公司能否彻底改变创意业务？</a></div>
+      <div class="meta">作者：It&#039;s Nice That &middot; 2026-07-07</div>
+    </div>
+  </div>
+      </div>
+    </div><div class="date-group" data-date-group="2026-07-04">
+      <div class="date-heading">
+        <h2>2026-07-04</h2>
+        <span class="count">1 篇</span>
+      </div>
+      <div class="index-list">
+        <div class="index-item filter-item" data-source="HeyShow" data-date="2026-07-04" data-keyword="浮躁变创造！不想下课的陶艺旅行：@potter’s house专访 浮躁變創造！不想下課的陶藝旅行：@potter’s house專訪 heyshow 黑秀小編">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">HeyShow</div>
+      <div class="title"><a href="https://heyshow.com/2026/07/04/mobile51202/" target="_blank" rel="noopener noreferrer">浮躁变创造！不想下课的陶艺旅行：@Potter’s House专访</a></div>
+      <div class="meta">作者：黑秀小編 &middot; 2026-07-04</div>
+    </div>
+  </div>
+      </div>
+    </div><div class="date-group" data-date-group="2026-07-01">
+      <div class="date-heading">
+        <h2>2026-07-01</h2>
+        <span class="count">1 篇</span>
+      </div>
+      <div class="index-list">
+        <div class="index-item filter-item" data-source="HeyShow" data-date="2026-07-01" data-keyword="2026 荆山新创奖，征件正式起跑！百万奖金等你来拿! 2026 荊山新創獎，徵件正式起跑！百萬獎金等你來拿! heyshow 黑秀小編">
+    <span class="marker">&diams;</span>
+    <div class="body">
+      <div class="source">HeyShow</div>
+      <div class="title"><a href="https://heyshow.com/2026/07/01/mobile51219/" target="_blank" rel="noopener noreferrer">2026 荆山新创奖，征件正式起跑！百万奖金等你来拿!</a></div>
+      <div class="meta">作者：黑秀小編 &middot; 2026-07-01</div>
+    </div>
+  </div>
+      </div>
+    </div>
+    <div class="pager" aria-label="pagination">
+    <span class="pager-status">1 / 1</span>
+    <div class="pager-actions">
+      <button class="pager-prev" type="button">Prev</button>
+      <button class="pager-next" type="button">Next</button>
+    </div>
+  </div>
+  </section>
+    <section class="panel" id="panel-biz" data-section="biz" data-paginated="true" data-page-size="16">
+    <div class="toolbar" data-toolbar="biz">
+    <div class="select-wrap source">
+      <select class="source-filter" data-filter="source" aria-label="来源">
+        <option value="">全部来源</option>
+        <option value="36Kr">36Kr</option><option value="IT Juzi">IT Juzi</option>
+      </select>
+    </div>
+    <div class="select-wrap date">
+      <select class="date-filter" data-filter="date" aria-label="日期">
+        <option value="">全部日期</option>
+        <option value="2026-07-24">2026-07-24</option><option value="2026-07-23">2026-07-23</option>
+      </select>
+    </div>
+    <div class="toolbar-search">
+      <input class="keyword-filter" data-filter="keyword" type="search" autocomplete="off" placeholder="输入标题关键词搜索">
+      <button class="search-button" type="button">搜索</button>
+    </div>
+  </div>
+    <div class="date-group" data-date-group="2026-07-24">
+      <div class="date-heading">
+        <h2>2026-07-24</h2>
+        <span class="count">33 条</span>
+      </div>
+      <div class="wire-list">
+        <a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909125301359750?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="*st康佳a：对子公司提供的借款逾期 预计不会对公司合并报表的财务状况和经营成果产生重大影响 *st康佳a：对子公司提供的借款逾期 预计不会对公司合并报表的财务状况和经营成果产生重大影响 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">*ST康佳A：对子公司提供的借款逾期 预计不会对公司合并报表的财务状况和经营成果产生重大影响</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909113827677574?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="字节跳动在中卫成立朔方星河科技公司，注册资本24亿 字节跳动在中卫成立朔方星河科技公司，注册资本24亿 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">字节跳动在中卫成立朔方星河科技公司，注册资本24亿</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909101829428359?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="半日主力资金加仓电子、国防军工股 半日主力资金加仓电子、国防军工股 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">半日主力资金加仓电子、国防军工股</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909120897389697?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="恒指午间休盘跌1.27%，恒生科技指数跌1.69% 恒指午间休盘跌1.27%，恒生科技指数跌1.69% 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">恒指午间休盘跌1.27%，恒生科技指数跌1.69%</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909095652480130?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="10家航空公司、5家线上售票平台被约谈，限期完成机票超售问题自查整改 10家航空公司、5家线上售票平台被约谈，限期完成机票超售问题自查整改 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">10家航空公司、5家线上售票平台被约谈，限期完成机票超售问题自查整改</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909092046345606?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="a股三大指数午间休盘集体下跌，算力股走弱 a股三大指数午间休盘集体下跌，算力股走弱 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">A股三大指数午间休盘集体下跌，算力股走弱</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909080916153475?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="上半年国家电网完成固定资产投资同比增长12.6% 上半年国家电网完成固定资产投资同比增长12.6% 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">上半年国家电网完成固定资产投资同比增长12.6%</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909072299234696?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="meta在最新120亿美元数据中心融资中面临更高借贷成本 meta在最新120亿美元数据中心融资中面临更高借贷成本 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">Meta在最新120亿美元数据中心融资中面临更高借贷成本</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909065846740354?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="东方甄选：预计2026财年净溢利同比增长8566.7%至9066.7% 东方甄选：预计2026财年净溢利同比增长8566.7%至9066.7% 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">东方甄选：预计2026财年净溢利同比增长8566.7%至9066.7%</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909052713686152?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="市场监管总局：深入整治“内卷式”竞争 市场监管总局：深入整治“内卷式”竞争 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">市场监管总局：深入整治“内卷式”竞争</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909044289525125?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="上半年全国完成水利建设投资5151亿元 上半年全国完成水利建设投资5151亿元 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">上半年全国完成水利建设投资5151亿元</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909040617641349?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="董宇辉在西安成立新文化传播公司，注册资本100万 董宇辉在西安成立新文化传播公司，注册资本100万 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">董宇辉在西安成立新文化传播公司，注册资本100万</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909036705027460?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="a股三大指数均跌超1% a股三大指数均跌超1% 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">A股三大指数均跌超1%</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909033361020289?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="商务部：1-6月智能外骨骼和智能眼镜网零额分别增长458.4%和151.7% 商务部：1-6月智能外骨骼和智能眼镜网零额分别增长458.4%和151.7% 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">商务部：1-6月智能外骨骼和智能眼镜网零额分别增长458.4%和151.7%</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909029984949639?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="张小龙卸任北京粉笔初心科技公司职务 张小龙卸任北京粉笔初心科技公司职务 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">张小龙卸任北京粉笔初心科技公司职务</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909022362588545?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="周生生、老凤祥等品牌金饰价格集体下调 周生生、老凤祥等品牌金饰价格集体下调 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">周生生、老凤祥等品牌金饰价格集体下调</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909012732466304?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="爱奇艺发布创作者平台品牌和六大服务体系 爱奇艺发布创作者平台品牌和六大服务体系 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">爱奇艺发布创作者平台品牌和六大服务体系</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3909002792408452?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="中际旭创据悉将提前结束其香港招股的投资者认购 中际旭创据悉将提前结束其香港招股的投资者认购 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">中际旭创据悉将提前结束其香港招股的投资者认购</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3908995431437700?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="opec+或从9月起再次上调石油产量目标 opec+或从9月起再次上调石油产量目标 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">OPEC+或从9月起再次上调石油产量目标</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://36kr.com/newsflashes/3908993642845568?f=rss" target="_blank" rel="noopener noreferrer" data-source="36Kr" data-date="2026-07-24" data-keyword="遨天甘德一号01星发射成功 遨天甘德一号01星发射成功 36kr 36kr">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">36Kr</span>
+      <span class="title">遨天甘德一号01星发射成功</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701158" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-24" data-keyword="和光量子获得天使轮融资 和光量子获得天使轮融资 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">和光量子获得天使轮融资</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701150" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-24" data-keyword="etched.ai 获得3亿美元 c轮融资 etched.ai获得3亿美元c轮融资 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">Etched.ai 获得3亿美元 C轮融资</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701141" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-24" data-keyword="businessnext 获得4000万美元战略投资 businessnext获得4000万美元战略投资 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">BusinessNext 获得4000万美元战略投资</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701134" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-24" data-keyword="星旺空间获得数千万人民币天使轮融资 星旺空间获得数千万人民币天使轮融资 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">星旺空间获得数千万人民币天使轮融资</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701108" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-24" data-keyword="元川微获得数亿人民币pre-a轮融资 元川微获得数亿人民币pre-a轮融资 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">元川微获得数亿人民币Pre-A轮融资</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701107" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-24" data-keyword="智简未来获得a轮融资 智简未来获得a轮融资 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">智简未来获得A轮融资</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701117" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-24" data-keyword="脑玑医疗获得千万级人民币天使轮融资 脑玑医疗获得千万级人民币天使轮融资 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">脑玑医疗获得千万级人民币天使轮融资</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701127" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-24" data-keyword="scribe therapeutics 上市 scribe therapeutics 上市 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">Scribe Therapeutics 上市</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701122" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-24" data-keyword="长鹰硬科今日上市 发行价格18.89元/股 长鹰硬科今日上市 发行价格18.89元/股 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">长鹰硬科今日上市 发行价格18.89元/股</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701055" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-24" data-keyword="元昊动力primalverse完成数亿元种子轮融资 元昊动力primalverse完成数亿元种子轮融资 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">元昊动力PrimalVerse完成数亿元种子轮融资</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701113" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-24" data-keyword="比特无限连续完成了天使轮与天使+轮融资 比特无限连续完成了天使轮与天使+轮融资 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">比特无限连续完成了天使轮与天使+轮融资</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701112" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-24" data-keyword="花伍科技在全国股转系统挂牌公开转让 花伍科技在全国股转系统挂牌公开转让 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">花伍科技在全国股转系统挂牌公开转让</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701111" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-24" data-keyword="音创股份在全国股转系统挂牌公开转让 音创股份在全国股转系统挂牌公开转让 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">音创股份在全国股转系统挂牌公开转让</span>
+    </span>
+  </a>
+      </div>
+    </div><div class="date-group" data-date-group="2026-07-23">
+      <div class="date-heading">
+        <h2>2026-07-23</h2>
+        <span class="count">7 条</span>
+      </div>
+      <div class="wire-list">
+        <a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701106" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-23" data-keyword="emergent software获得战略投资 emergent software获得战略投资 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">Emergent Software获得战略投资</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701105" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-23" data-keyword="pro-max获得战略投资 pro-max获得战略投资 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">Pro-Max获得战略投资</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701098" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-23" data-keyword="ai直播预测平台k25.ai完成a轮融资，估值达到2亿美元 ai直播预测平台k25.ai完成a轮融资，估值达到2亿美元 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">AI直播预测平台K25.ai完成A轮融资，估值达到2亿美元</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14700408" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-23" data-keyword="领铄智能获得千万级a轮追加投资 领铄智能获得千万级a轮追加投资 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">领铄智能获得千万级A轮追加投资</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701091" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-23" data-keyword="灵初智能融资近1亿美元 灵初智能融资近1亿美元 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">灵初智能融资近1亿美元</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701096" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-23" data-keyword="zafran获得数百万美元战略投资 zafran获得数百万美元战略投资 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">Zafran获得数百万美元战略投资</span>
+    </span>
+  </a><a class="wire-item filter-item" href="https://www.itjuzi.com/investevent/14701095" target="_blank" rel="noopener noreferrer" data-source="IT Juzi" data-date="2026-07-23" data-keyword="lngvty获得5000万卢比种子轮融资 lngvty获得5000万卢比种子轮融资 it juzi it juzi">
+    <span class="marker"></span>
+    <span class="body">
+      <span class="source">IT Juzi</span>
+      <span class="title">LNGVTY获得5000万卢比种子轮融资</span>
+    </span>
+  </a>
+      </div>
+    </div>
+    <div class="pager" aria-label="pagination">
+    <span class="pager-status">1 / 1</span>
+    <div class="pager-actions">
+      <button class="pager-prev" type="button">Prev</button>
+      <button class="pager-next" type="button">Next</button>
+    </div>
+  </div>
+  </section>
+    <section class="panel" id="panel-plugin" data-section="plugin">
+    <div class="board-toolbar">
+      <div class="select-wrap source">
+        <select class="tag-filter" data-filter="tag" aria-label="标签">
+          <option value="">今日全部标签</option>
+          <option value="Analytics">Analytics</option><option value="API">API</option><option value="Apple TV">Apple TV</option><option value="Artificial Intelligence">Artificial Intelligence</option><option value="Career">Career</option><option value="Cell Phone">Cell Phone</option><option value="Developer Tools">Developer Tools</option><option value="Development">Development</option><option value="Education">Education</option><option value="Email">Email</option><option value="Fitness">Fitness</option><option value="GitHub">GitHub</option><option value="Hardware">Hardware</option><option value="Health &amp; Fitness">Health &amp; Fitness</option><option value="Influencer marketing">Influencer marketing</option><option value="iOS">iOS</option><option value="Mac">Mac</option><option value="Marketing">Marketing</option><option value="Messaging">Messaging</option><option value="Movies">Movies</option><option value="Music">Music</option><option value="Open Source">Open Source</option><option value="Productivity">Productivity</option><option value="SaaS">SaaS</option><option value="Security">Security</option><option value="SEO">SEO</option><option value="Social media marketing">Social media marketing</option><option value="Social Networking">Social Networking</option><option value="Task Management">Task Management</option><option value="Travel">Travel</option><option value="Wearables">Wearables</option><option value="Writing">Writing</option>
+        </select>
+      </div>
+      <span class="note">2026.07.24 - 仅当日榜单，不保留历史，每日刷新覆盖</span>
+    </div>
+    <div class="board-list">
+      <a class="board-item filter-item" href="https://www.producthunt.com/products/buzzy-2" target="_blank" rel="noopener noreferrer" data-tag="Movies|Marketing|Artificial Intelligence" data-keyword="buzzy buzzy product hunt product hunt 您的创意 ai 联合总监 movies marketing artificial intelligence">
+    <div class="board-rank">01</div>
+    <div class="board-body">
+      <h3><span class="hint" >Buzzy</span></h3>
+      <p>您的创意 AI 联合总监</p>
+      <div class="board-tags"><span class="hint" data-zh="电影">Movies</span><span class="hint" data-zh="营销">Marketing</span><span class="hint" data-zh="人工智能">Artificial Intelligence</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/humalike-2" target="_blank" rel="noopener noreferrer" data-tag="API|Developer Tools|Artificial Intelligence" data-keyword="humalike x hermes humalike x hermes product hunt product hunt 爱马仕经纪人 的社交智能插件 api developer tools artificial intelligence">
+    <div class="board-rank">02</div>
+    <div class="board-body">
+      <h3><span class="hint" data-zh="Humalike x 爱马仕">Humalike x Hermes</span></h3>
+      <p>爱马仕经纪人 的社交智能插件</p>
+      <div class="board-tags"><span class="hint" data-zh="应用程序编程接口">API</span><span class="hint" data-zh="开发者工具">Developer Tools</span><span class="hint" data-zh="人工智能">Artificial Intelligence</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/migma-ai" target="_blank" rel="noopener noreferrer" data-tag="Email|Analytics|Marketing" data-keyword="migma ai migma ai product hunt product hunt 人工智能运行您的电子邮件营销。每次发送都会更好。 email analytics marketing">
+    <div class="board-rank">03</div>
+    <div class="board-body">
+      <h3><span class="hint" >Migma AI</span></h3>
+      <p>人工智能运行您的电子邮件营销。每次发送都会更好。</p>
+      <div class="board-tags"><span class="hint" data-zh="电子邮件">Email</span><span class="hint" data-zh="分析">Analytics</span><span class="hint" data-zh="营销">Marketing</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/kastra" target="_blank" rel="noopener noreferrer" data-tag="Developer Tools|Artificial Intelligence|GitHub" data-keyword="kastra kastra product hunt product hunt claude 、cursor、 codex 和 openclaw 的运行时授权 developer tools artificial intelligence github">
+    <div class="board-rank">04</div>
+    <div class="board-body">
+      <h3><span class="hint" >Kastra</span></h3>
+      <p>Claude 、Cursor、 Codex 和 OpenClaw 的运行时授权</p>
+      <div class="board-tags"><span class="hint" data-zh="开发者工具">Developer Tools</span><span class="hint" data-zh="人工智能">Artificial Intelligence</span><span class="hint" data-zh="GitHub 代码库">GitHub</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/box-4" target="_blank" rel="noopener noreferrer" data-tag="Developer Tools|Artificial Intelligence" data-keyword="box box product hunt product hunt 用于具有完整虚拟机的代理的简单计算机 developer tools artificial intelligence">
+    <div class="board-rank">05</div>
+    <div class="board-body">
+      <h3><span class="hint" >box</span></h3>
+      <p>用于具有完整虚拟机的代理的简单计算机</p>
+      <div class="board-tags"><span class="hint" data-zh="开发者工具">Developer Tools</span><span class="hint" data-zh="人工智能">Artificial Intelligence</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/acme-bot" target="_blank" rel="noopener noreferrer" data-tag="Marketing|SEO|Artificial Intelligence" data-keyword="acme.bot acme.bot product hunt product hunt 首先采访您的无懈可击的 ai seo 代理 marketing seo artificial intelligence">
+    <div class="board-rank">06</div>
+    <div class="board-body">
+      <h3><span class="hint" >ACME.BOT</span></h3>
+      <p>首先采访您的无懈可击的 AI SEO 代理</p>
+      <div class="board-tags"><span class="hint" data-zh="营销">Marketing</span><span class="hint" data-zh="搜索引擎优化">SEO</span><span class="hint" data-zh="人工智能">Artificial Intelligence</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/gemini-3-6-flash-family" target="_blank" rel="noopener noreferrer" data-tag="SaaS|Artificial Intelligence|Development" data-keyword="gemini 3.6 flash family gemini 3.6 flash family product hunt product hunt gemini 3.6 flash、 3.5 flash-lite 和 3.5 flash cyber saas artificial intelligence development">
+    <div class="board-rank">07</div>
+    <div class="board-body">
+      <h3><span class="hint" data-zh="Gemini 3.6 闪存系列">Gemini 3.6 Flash Family</span></h3>
+      <p>Gemini 3.6 Flash、 3.5 Flash-Lite 和 3.5 Flash Cyber</p>
+      <div class="board-tags"><span class="hint" data-zh="软件即服务">SaaS</span><span class="hint" data-zh="人工智能">Artificial Intelligence</span><span class="hint" data-zh="发展">Development</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/monocloud-for-startups-free-for-1-year" target="_blank" rel="noopener noreferrer" data-tag="SaaS|Developer Tools|Security" data-keyword="monocloud for startups monocloud for startups product hunt product hunt 为您的客户、api 和代理提供一个身份层 saas developer tools security">
+    <div class="board-rank">08</div>
+    <div class="board-body">
+      <h3><span class="hint" data-zh="面向初创公司的 MonoCloud">MonoCloud for Startups</span></h3>
+      <p>为您的客户、API 和代理提供一个身份层</p>
+      <div class="board-tags"><span class="hint" data-zh="软件即服务">SaaS</span><span class="hint" data-zh="开发者工具">Developer Tools</span><span class="hint" data-zh="安全">Security</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/trovio-brand-dashboard" target="_blank" rel="noopener noreferrer" data-tag="Marketing|Influencer marketing|Social media marketing" data-keyword="trovio for brands trovio for brands product hunt product hunt 社区喜爱您的品牌 - 我们的人工智能团队会为您找到合适的品牌 marketing influencer marketing social media marketing">
+    <div class="board-rank">09</div>
+    <div class="board-body">
+      <h3><span class="hint" data-zh="Trovio 品牌">Trovio For Brands</span></h3>
+      <p>社区喜爱您的品牌 - 我们的人工智能团队会为您找到合适的品牌</p>
+      <div class="board-tags"><span class="hint" data-zh="营销">Marketing</span><span class="hint" data-zh="影响者营销">Influencer marketing</span><span class="hint" data-zh="社交媒体营销">Social media marketing</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/light-phone" target="_blank" rel="noopener noreferrer" data-tag="Hardware|Cell Phone" data-keyword="light flip light flip product hunt product hunt 怀念智能手机出现之前的时光 hardware cell phone">
+    <div class="board-rank">10</div>
+    <div class="board-body">
+      <h3><span class="hint" data-zh="轻翻转">Light Flip</span></h3>
+      <p>怀念智能手机出现之前的时光</p>
+      <div class="board-tags"><span class="hint" data-zh="硬件">Hardware</span><span class="hint" data-zh="手机">Cell Phone</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/arkor" target="_blank" rel="noopener noreferrer" data-tag="Open Source|Developer Tools|GitHub" data-keyword="arkor arkor product hunt product hunt 在 typescript 中微调和部署开放权重模型 open source developer tools github">
+    <div class="board-rank">11</div>
+    <div class="board-body">
+      <h3><span class="hint" >Arkor</span></h3>
+      <p>在 TypeScript 中微调和部署开放权重模型</p>
+      <div class="board-tags"><span class="hint" data-zh="开源">Open Source</span><span class="hint" data-zh="开发者工具">Developer Tools</span><span class="hint" data-zh="GitHub 代码库">GitHub</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/agentmanager" target="_blank" rel="noopener noreferrer" data-tag="Mac|Developer Tools|Artificial Intelligence" data-keyword="agentmanager agentmanager product hunt product hunt 永远不会错过等待您输入的 claude code 会话 mac developer tools artificial intelligence">
+    <div class="board-rank">12</div>
+    <div class="board-body">
+      <h3><span class="hint" data-zh="代理管理器">AgentManager</span></h3>
+      <p>永远不会错过等待您输入的 Claude Code 会话</p>
+      <div class="board-tags"><span class="hint" data-zh="苹果">Mac</span><span class="hint" data-zh="开发者工具">Developer Tools</span><span class="hint" data-zh="人工智能">Artificial Intelligence</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/grindoro" target="_blank" rel="noopener noreferrer" data-tag="Productivity|Task Management|Social Networking" data-keyword="grindoro grindoro product hunt product hunt 通过同步番茄工作法与他人集中注意力 productivity task management social networking">
+    <div class="board-rank">13</div>
+    <div class="board-body">
+      <h3><span class="hint" data-zh="格林多罗">Grindoro</span></h3>
+      <p>通过同步番茄工作法与他人集中注意力</p>
+      <div class="board-tags"><span class="hint" data-zh="生产率">Productivity</span><span class="hint" data-zh="任务管理">Task Management</span><span class="hint" data-zh="社交网络">Social Networking</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/redential" target="_blank" rel="noopener noreferrer" data-tag="Open Source|Developer Tools|Career" data-keyword="redential redential product hunt product hunt 证明您所构建内容的开发人员凭证，nda 安全。 open source developer tools career">
+    <div class="board-rank">14</div>
+    <div class="board-body">
+      <h3><span class="hint" data-zh="红点">Redential</span></h3>
+      <p>证明您所构建内容的开发人员凭证，NDA 安全。</p>
+      <div class="board-tags"><span class="hint" data-zh="开源">Open Source</span><span class="hint" data-zh="开发者工具">Developer Tools</span><span class="hint" data-zh="职业">Career</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/overflight-sky-radar" target="_blank" rel="noopener noreferrer" data-tag="iOS|Apple TV|Travel" data-keyword="overflight overflight product hunt product hunt 识别天空中的每架飞机。 ios apple tv travel">
+    <div class="board-rank">15</div>
+    <div class="board-body">
+      <h3><span class="hint" data-zh="飞越">Overflight</span></h3>
+      <p>识别天空中的每架飞机。</p>
+      <div class="board-tags"><span class="hint" data-zh="iOS系统">iOS</span><span class="hint" data-zh="苹果电视">Apple TV</span><span class="hint" data-zh="旅行">Travel</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/lattics-2" target="_blank" rel="noopener noreferrer" data-tag="Productivity|Writing|Artificial Intelligence" data-keyword="lattics lattics product hunt product hunt ai写作、深度研究的类脑知识库 productivity writing artificial intelligence">
+    <div class="board-rank">16</div>
+    <div class="board-body">
+      <h3><span class="hint" >Lattics</span></h3>
+      <p>AI写作、深度研究的类脑知识库</p>
+      <div class="board-tags"><span class="hint" data-zh="生产率">Productivity</span><span class="hint" data-zh="写作">Writing</span><span class="hint" data-zh="人工智能">Artificial Intelligence</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/garmin-cirqa-smart-band" target="_blank" rel="noopener noreferrer" data-tag="Health &amp; Fitness|Wearables|Fitness" data-keyword="garmin cirqa™ smart band garmin cirqa™ smart band product hunt product hunt 无需订阅的无屏健康 + 健身追踪器 health &amp; fitness wearables fitness">
+    <div class="board-rank">17</div>
+    <div class="board-body">
+      <h3><span class="hint" data-zh="Garmin CIRQA™ 智能手环">Garmin CIRQA™ Smart Band</span></h3>
+      <p>无需订阅的无屏健康 + 健身追踪器</p>
+      <div class="board-tags"><span class="hint" data-zh="健康与健身">Health &amp; Fitness</span><span class="hint" data-zh="可穿戴设备">Wearables</span><span class="hint" data-zh="健康">Fitness</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/cometchat" target="_blank" rel="noopener noreferrer" data-tag="Messaging|Developer Tools|Artificial Intelligence" data-keyword="ai agents in chat ai agents in chat product hunt product hunt 你的聊天界面刚刚有了一个人工智能室友 messaging developer tools artificial intelligence">
+    <div class="board-rank">18</div>
+    <div class="board-body">
+      <h3><span class="hint" data-zh="聊天中的人工智能代理">AI Agents in Chat</span></h3>
+      <p>你的聊天界面刚刚有了一个人工智能室友</p>
+      <div class="board-tags"><span class="hint" data-zh="消息传递">Messaging</span><span class="hint" data-zh="开发者工具">Developer Tools</span><span class="hint" data-zh="人工智能">Artificial Intelligence</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/ultrapod" target="_blank" rel="noopener noreferrer" data-tag="Health &amp; Fitness|Music" data-keyword="ultrapod ultrapod product hunt product hunt 将您的旧 iphone 变成音乐优先的哑机 health &amp; fitness music">
+    <div class="board-rank">19</div>
+    <div class="board-body">
+      <h3><span class="hint" data-zh="超级Pod">UltraPod</span></h3>
+      <p>将您的旧 iPhone 变成音乐优先的哑机</p>
+      <div class="board-tags"><span class="hint" data-zh="健康与健身">Health &amp; Fitness</span><span class="hint" data-zh="音乐">Music</span></div>
+    </div>
+  </a><a class="board-item filter-item" href="https://www.producthunt.com/products/agine-academy" target="_blank" rel="noopener noreferrer" data-tag="Productivity|Education|Artificial Intelligence" data-keyword="agine academy agine academy product hunt product hunt 一个故事驱动的游戏，通过实践来学习克劳德 productivity education artificial intelligence">
+    <div class="board-rank">20</div>
+    <div class="board-body">
+      <h3><span class="hint" data-zh="阿金学院">AGINE Academy</span></h3>
+      <p>一个故事驱动的游戏，通过实践来学习克劳德</p>
+      <div class="board-tags"><span class="hint" data-zh="生产率">Productivity</span><span class="hint" data-zh="教育">Education</span><span class="hint" data-zh="人工智能">Artificial Intelligence</span></div>
+    </div>
+  </a>
+    </div>
+  </section>
+    <section class="panel" id="panel-crowd" data-section="crowd">
+    <div class="crowd-overview">
+      <div class="select-wrap source">
+        <select class="tag-filter" data-filter="tag" aria-label="标签">
+          <option value="">全部分类</option>
+          <option value="3D Printing">3D Printing</option><option value="Ceramics">Ceramics</option><option value="DIY Electronics">DIY Electronics</option><option value="Fiction">Fiction</option><option value="Gadgets">Gadgets</option><option value="Product Design">Product Design</option><option value="Sound">Sound</option><option value="Tabletop Games">Tabletop Games</option><option value="TTRPG">TTRPG</option><option value="Video Games">Video Games</option>
+        </select>
+      </div>
+      <span class="note">Kickstarter 热门项目 Top 20 - 2026.07.24 - 共 20 个项目</span>
+    </div>
+    <div class="crowd-list">
+      <a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/feliciaday/watchtheguild" target="_blank" rel="noopener noreferrer" data-tag="Tabletop Games" data-keyword="the guild: ren faire&#039;d the guild: ren faire&#039;d kickstarter felicia day 制作史上最史诗般的狂欢电影，帮助我们庆祝 the guild 即将成立 20 周年！ tabletop games los angeles, ca 制作史上最史诗般的狂欢电影，帮助我们庆祝 the guild 即将成立 20 周年！ tabletop games los angeles, ca">
+    <div class="crowd-rank">01</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/496/732/00d0790705a9a18834ea533a0ac57e26_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1784572300&amp;width=352&amp;sig=qdOVgch2Ola2hb5WrMKerdURURp4YWvvFFojBFejzhE%3D" alt="The Guild: Ren Faire&#039;d" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="公会：Ren Faire&#039;d">The Guild: Ren Faire&#039;d</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">Felicia Day</span>
+        <span class="crowd-tag hint" data-zh="桌面游戏">Tabletop Games</span>
+        <span class="crowd-tag hint" data-zh="加利福尼亚州洛杉矶">Los Angeles, CA</span>
+      </div>
+      <p class="crowd-blurb">制作史上最史诗般的狂欢电影，帮助我们庆祝 The Guild 即将成立 20 周年！</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">230%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 29 天</span>
+        <span class="sep">&middot;</span>
+        <span>21,274 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/paperfortgames/cult-of-the-lamb-the-board-game" target="_blank" rel="noopener noreferrer" data-tag="Tabletop Games" data-keyword="cult of the lamb: the board game cult of the lamb: the board game kickstarter paper fort games 热门电子游戏《羔羊崇拜》的官方桌面改编。在这款 1-4 人工人安置游戏中讨伐并建立你的邪教！ tabletop games nottingham, uk 热门电子游戏《羔羊崇拜》的官方桌面改编。在这款 1-4 人工人安置游戏中讨伐并建立你的邪教！ tabletop games nottingham, uk">
+    <div class="crowd-rank">02</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/507/043/f9ec4d74683889d5b745dfd04acd3ffe_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1784639020&amp;width=352&amp;sig=Vv9PN4UmcC%2FcuVBnihUsRUlSKyxqIL8dFRoVDaEm%2BEU%3D" alt="Cult of the Lamb: The Board Game" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="羔羊崇拜：棋盘游戏">Cult of the Lamb: The Board Game</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">Paper Fort Games</span>
+        <span class="crowd-tag hint" data-zh="桌面游戏">Tabletop Games</span>
+        <span class="crowd-tag hint" data-zh="英国诺丁汉">Nottingham, UK</span>
+      </div>
+      <p class="crowd-blurb">热门电子游戏《羔羊崇拜》的官方桌面改编。在这款 1-4 人工人安置游戏中讨伐并建立你的邪教！</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">4,001%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 22 天</span>
+        <span class="sep">&middot;</span>
+        <span>3,976 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/heygears/heygears-g1-series-first-desktop-full-color-3d-and-uv-printer" target="_blank" rel="noopener noreferrer" data-tag="DIY Electronics" data-keyword="heygears g1 series: first desktop full-color 3d &amp; uv printer heygears g1 series: first desktop full-color 3d &amp; uv printer kickstarter heygears 全彩 3d 打印|1000 万种以上颜色|全彩和透明一次打印|防堵塞设计|自动校准|uv 打印速度提高 3 倍 diy electronics irvine, ca 全彩 3d 打印|1000 万种以上颜色|全彩和透明一次打印|防堵塞设计|自动校准|uv 打印速度提高 3 倍 diy electronics irvine, ca">
+    <div class="crowd-rank">03</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/536/277/33d2e0fff61d4df857b03ffcaead89d9_original.jpg?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1784833250&amp;width=352&amp;sig=%2Ffoz3zLoRTqKWRijrtNMxG%2F7ZUFq%2FDPqzSQlI0%2Fzy8g%3D" alt="HeyGears G1 Series: First Desktop Full-Color 3D &amp; UV Printer" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="HeyGears G1 系列：首款桌面全彩 3D 和 UV 打印机">HeyGears G1 Series: First Desktop Full-Color 3D &amp; UV Printer</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">HeyGears</span>
+        <span class="crowd-tag hint" data-zh="DIY电子产品">DIY Electronics</span>
+        <span class="crowd-tag hint" data-zh="加利福尼亚州欧文">Irvine, CA</span>
+      </div>
+      <p class="crowd-blurb">全彩 3D 打印|1000 万种以上颜色|全彩和透明一次打印|防堵塞设计|自动校准|UV 打印速度提高 3 倍</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">6,187%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 50 天</span>
+        <span class="sep">&middot;</span>
+        <span>1,442 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/barecookware/everpan" target="_blank" rel="noopener noreferrer" data-tag="Product Design" data-keyword="everpan: the last pan you&#039;ll buy everpan: the last pan you&#039;ll buy kickstarter bare cookware 不粘锅的易用性和钢的使用寿命，尽在一个 100% 金属锅中。无化学涂层。没有有效期。 product design rotterdam, netherlands 不粘锅的易用性和钢的使用寿命，尽在一个 100% 金属锅中。无化学涂层。没有有效期。 product design rotterdam, netherlands">
+    <div class="crowd-rank">04</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/110/883/359413fbac889ef740d7c73d71680f50_original.jpg?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1781513880&amp;width=352&amp;sig=VNPvLq0wuiqWy2PO%2FtI3%2B92Q7REvcQJiwrfIJtBuGdk%3D" alt="Everpan: The Last Pan You&#039;ll Buy" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="Everpan：您将购买的最后一个平底锅">Everpan: The Last Pan You&#039;ll Buy</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">BARE Cookware</span>
+        <span class="crowd-tag hint" data-zh="产品设计">Product Design</span>
+        <span class="crowd-tag hint" data-zh="荷兰鹿特丹">Rotterdam, Netherlands</span>
+      </div>
+      <p class="crowd-blurb">不粘锅的易用性和钢的使用寿命，尽在一个 100% 金属锅中。无化学涂层。没有有效期。</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">4,252%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 28 天</span>
+        <span class="sep">&middot;</span>
+        <span>4,351 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/hidizs/ap30-music-boy-the-first-truly-wearable-hi-res-music-player" target="_blank" rel="noopener noreferrer" data-tag="Sound" data-keyword="ap30 music boy: the first truly wearable hi-res music player ap30 music boy: the first truly wearable hi-res music player kickstarter hidizs 受 game boy 启发的设计与高分辨率音频的结合（dsd256、pcm 24 位/192khz）|鲸鱼风格背板|磁性手机扣|像素块游戏 sound hong kong, hong kong 受 game boy 启发的设计与高分辨率音频的结合（dsd256、pcm 24 位/192khz）|鲸鱼风格背板|磁性手机扣|像素块游戏 sound hong kong, hong kong">
+    <div class="crowd-rank">05</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/533/143/6264669011553bd3b65df90f50fc2ed1_original.jpg?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1784814939&amp;width=352&amp;sig=DTKksqHBii3LPCKg4ilii42w1EL8yntJ%2FPHJ%2FHhvRac%3D" alt="AP30 Music Boy: The First Truly Wearable Hi-Res Music Player" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="AP30 Music Boy：首款真正可穿戴式高分辨率音乐播放器">AP30 Music Boy: The First Truly Wearable Hi-Res Music Player</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">Hidizs</span>
+        <span class="crowd-tag hint" data-zh="声音">Sound</span>
+        <span class="crowd-tag hint" data-zh="香港, 香港">Hong Kong, Hong Kong</span>
+      </div>
+      <p class="crowd-blurb">受 Game Boy 启发的设计与高分辨率音频的结合（DSD256、PCM 24 位/192kHz）|鲸鱼风格背板|磁性手机扣|像素块游戏</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">2,748%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 25 天</span>
+        <span class="sep">&middot;</span>
+        <span>1,265 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/pixelmug/pixelmug-s1-series-the-most-playable-mug-ever" target="_blank" rel="noopener noreferrer" data-tag="Gadgets" data-keyword="pixelmug s1 series — the most playable mug ever pixelmug s1 series — the most playable mug ever kickstarter pixelmug 交互式像素显示|迷你游戏|音乐反应视觉 |智能办公桌助手|应用生态系统 |开放sdk | 350ml 日常马克杯 gadgets kowloon, hong kong 交互式像素显示|迷你游戏|音乐反应视觉 |智能办公桌助手|应用生态系统 |开放sdk | 350ml 日常马克杯 gadgets kowloon, hong kong">
+    <div class="crowd-rank">06</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/534/329/9cf83f4acb6aea006c7b441a1da3ea15_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1784821738&amp;width=352&amp;sig=92BprGfahVMy85SzdH%2BRcE8gyTUClvsZbsrQNcHarf8%3D" alt="PixelMug S1 Series — The Most Playable Mug Ever" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="PixelMug S1 系列 — 有史以来最好玩的马克杯">PixelMug S1 Series — The Most Playable Mug Ever</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">Pixelmug</span>
+        <span class="crowd-tag hint" data-zh="小工具">Gadgets</span>
+        <span class="crowd-tag hint" data-zh="香港九龙">Kowloon, Hong Kong</span>
+      </div>
+      <p class="crowd-blurb">交互式像素显示|迷你游戏|音乐反应视觉 |智能办公桌助手|应用生态系统 |开放SDK | 350ml 日常马克杯</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">3,101%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 30 天</span>
+        <span class="sep">&middot;</span>
+        <span>1,176 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/uchibacoyapiece/rosalie" target="_blank" rel="noopener noreferrer" data-tag="Tabletop Games" data-keyword="rosalie: a rosy game of gardening by totsuca chuo &amp; higabito rosalie: a rosy game of gardening by totsuca chuo &amp; higabito kickstarter uchibacoya 经营你自己的玫瑰花园——用你可爱的花园机器人管理、种植、杂交并绽放美丽的花朵！ tabletop games tokyo, japan 经营你自己的玫瑰花园——用你可爱的花园机器人管理、种植、杂交并绽放美丽的花朵！ tabletop games tokyo, japan">
+    <div class="crowd-rank">07</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/053/146/360/0243248fe7547b965cd016c074dc2ecc_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1774870781&amp;width=352&amp;sig=%2Fg9qRIE8nBIcMI8li9RQRxBE1MGIiG%2F5Q%2FhUfO%2BfGgg%3D" alt="Rosalie: A Rosy Game of Gardening by Totsuca Chuo &amp; Higabito" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="《罗莎莉：玫瑰色的园艺游戏》作者：Totsuca Chuo 和 Higabito">Rosalie: A Rosy Game of Gardening by Totsuca Chuo &amp; Higabito</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">uchibacoya</span>
+        <span class="crowd-tag hint" data-zh="桌面游戏">Tabletop Games</span>
+        <span class="crowd-tag hint" data-zh="日本东京">Tokyo, Japan</span>
+      </div>
+      <p class="crowd-blurb">经营你自己的玫瑰花园——用你可爱的花园机器人管理、种植、杂交并绽放美丽的花朵！</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">2,593%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 29 天</span>
+        <span class="sep">&middot;</span>
+        <span>3,958 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/enhearten-media/sanctuary-shattered-sun" target="_blank" rel="noopener noreferrer" data-tag="Video Games" data-keyword="sanctuary: shattered sun sanctuary: shattered sun kickstarter enhearten media 这是一款下一代大型 rts，以破碎的戴森球表面为背景，拥有数百个单位和广阔而令人惊叹的战场。 video games brisbane, au 这是一款下一代大型 rts，以破碎的戴森球表面为背景，拥有数百个单位和广阔而令人惊叹的战场。 video games brisbane, au">
+    <div class="crowd-rank">08</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/508/599/4e232ee507e8c80921944566962805a2_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1784646836&amp;width=352&amp;sig=cWfFgF7F%2FdlHz5%2FAA73fAzCykICwvSe14jkEhKDDpO8%3D" alt="Sanctuary: Shattered Sun" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="圣域：破碎残阳">Sanctuary: Shattered Sun</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">Enhearten Media</span>
+        <span class="crowd-tag hint" data-zh="电子游戏">Video Games</span>
+        <span class="crowd-tag hint" data-zh="澳大利亚布里斯班">Brisbane, AU</span>
+      </div>
+      <p class="crowd-blurb">这是一款下一代大型 RTS，以破碎的戴森球表面为背景，拥有数百个单位和广阔而令人惊叹的战场。</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">320%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 28 天</span>
+        <span class="sep">&middot;</span>
+        <span>3,461 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/slugfestgames/red-dragon-inn-tiki-mugs-part-two" target="_blank" rel="noopener noreferrer" data-tag="Ceramics" data-keyword="red dragon inn tiki mugs - part two red dragon inn tiki mugs - part two kickstarter slugfest games 三款全新提基马克杯设计灵感源自《红龙客栈》！ ceramics oakland, ca 三款全新提基马克杯设计灵感源自《红龙客栈》！ ceramics oakland, ca">
+    <div class="crowd-rank">09</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/353/958/8ba8ae1877a20ca99612067cbb9ca179_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1783383808&amp;width=352&amp;sig=CNJF19XiHarUY4ElHYZIU2g%2FGMmwdjW5leVX%2F6QSxLo%3D" alt="Red Dragon Inn Tiki Mugs - Part Two" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="红龙旅馆 Tiki 马克杯 - 第二部分">Red Dragon Inn Tiki Mugs - Part Two</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">SlugFest Games</span>
+        <span class="crowd-tag hint" data-zh="陶瓷">Ceramics</span>
+        <span class="crowd-tag hint" data-zh="加利福尼亚州奥克兰">Oakland, CA</span>
+      </div>
+      <p class="crowd-blurb">三款全新提基马克杯设计灵感源自《红龙客栈》！</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">1,121%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 21 天</span>
+        <span class="sep">&middot;</span>
+        <span>649 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/wraithmarked/odyssey-1" target="_blank" rel="noopener noreferrer" data-tag="Fiction" data-keyword="the odyssey - special limited edition the odyssey - special limited edition kickstarter wraithmarked creative 荷马史诗以您可以永远喜爱的版本呈现给您。 fiction rochester, ny 荷马史诗以您可以永远喜爱的版本呈现给您。 fiction rochester, ny">
+    <div class="crowd-rank">10</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/396/665/d0d8d01cd44dcd34de1a124da3f3f6ad_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1783687580&amp;width=352&amp;sig=nU98uVq6xo7Jn%2B8lZYuokjWWNA1bPa8Asq7fOSniFGg%3D" alt="The Odyssey - Special Limited Edition" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="奥德赛 - 特别限量版">The Odyssey - Special Limited Edition</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">Wraithmarked Creative</span>
+        <span class="crowd-tag hint" data-zh="小说">Fiction</span>
+        <span class="crowd-tag hint" data-zh="纽约州罗切斯特">Rochester, NY</span>
+      </div>
+      <p class="crowd-blurb">荷马史诗以您可以永远喜爱的版本呈现给您。</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">703%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 29 天</span>
+        <span class="sep">&middot;</span>
+        <span>625 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/splitstonegames/stag-beetle" target="_blank" rel="noopener noreferrer" data-tag="Tabletop Games" data-keyword="stag stag kickstarter split stone games 这是一款关于甲虫的同步策略游戏，聪明的计划可以赢得积分，但贪婪的诱惑会让你付出高昂的代价！ tabletop games worthing, uk 这是一款关于甲虫的同步策略游戏，聪明的计划可以赢得积分，但贪婪的诱惑会让你付出高昂的代价！ tabletop games worthing, uk">
+    <div class="crowd-rank">11</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/497/165/a9a21e2300e5011d5177fdcb47681b7d_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1784574560&amp;width=352&amp;sig=nmw0PDTCHIQyRLeC%2FeTZPqt64xxUeL%2Fy61gicfMmMAs%3D" alt="STAG" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" >STAG</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">Split Stone Games</span>
+        <span class="crowd-tag hint" data-zh="桌面游戏">Tabletop Games</span>
+        <span class="crowd-tag hint" data-zh="英国沃辛">Worthing, UK</span>
+      </div>
+      <p class="crowd-blurb">这是一款关于甲虫的同步策略游戏，聪明的计划可以赢得积分，但贪婪的诱惑会让你付出高昂的代价！</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">1,276%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 19 天</span>
+        <span class="sep">&middot;</span>
+        <span>1,597 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/peak-design/field-bracket-by-peak-design" target="_blank" rel="noopener noreferrer" data-tag="Product Design" data-keyword="field bracket by peak design field bracket by peak design kickstarter peak design 一系列模块化、相机专用的 l 型支架和配件，增加了跟踪和改变游戏规则的功能。 product design san francisco, ca 一系列模块化、相机专用的 l 型支架和配件，增加了跟踪和改变游戏规则的功能。 product design san francisco, ca">
+    <div class="crowd-rank">12</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/507/129/6e287fe6d7d7be9b1e917a9775a200e6_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1784639447&amp;width=352&amp;sig=T8W3X%2BEaQRIDKO8IMh3%2FOqC%2BXAt1fc%2FBpJC8d%2BC9Qc0%3D" alt="Field Bracket by Peak Design" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="Peak Design 现场支架">Field Bracket by Peak Design</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">Peak Design</span>
+        <span class="crowd-tag hint" data-zh="产品设计">Product Design</span>
+        <span class="crowd-tag hint" data-zh="加利福尼亚州旧金山">San Francisco, CA</span>
+      </div>
+      <p class="crowd-blurb">一系列模块化、相机专用的 L 型支架和配件，增加了跟踪和改变游戏规则的功能。</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">821%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 29 天</span>
+        <span class="sep">&middot;</span>
+        <span>1,851 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/raycue/timecapsule-g3-a-tiny-ai-time-machine-for-your-desk" target="_blank" rel="noopener noreferrer" data-tag="Gadgets" data-keyword="timecapsule g3: a tiny ai time machine for your desk timecapsule g3: a tiny ai time machine for your desk kickstarter raycue 一款复古风格的桌面伴侣，配有时钟、闹钟、提醒、蓝牙扬声器和每小时的历史时刻。 gadgets hong kong, hong kong 一款复古风格的桌面伴侣，配有时钟、闹钟、提醒、蓝牙扬声器和每小时的历史时刻。 gadgets hong kong, hong kong">
+    <div class="crowd-rank">13</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/535/974/bbe979e8c414d4472d9b540b0f688bda_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1784831217&amp;width=352&amp;sig=EMyEBwEpKwIUKs4w%2BECZbxVaQs%2Bm7idKMT94PzA5b4w%3D" alt="TIMECAPSULE G3: A Tiny AI Time Machine for Your Desk" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="TIMECAPSULE G3：桌面上的微型人工智能时间机器">TIMECAPSULE G3: A Tiny AI Time Machine for Your Desk</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">RayCue</span>
+        <span class="crowd-tag hint" data-zh="小工具">Gadgets</span>
+        <span class="crowd-tag hint" data-zh="香港, 香港">Hong Kong, Hong Kong</span>
+      </div>
+      <p class="crowd-blurb">一款复古风格的桌面伴侣，配有时钟、闹钟、提醒、蓝牙扬声器和每小时的历史时刻。</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">1,157%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 28 天</span>
+        <span class="sep">&middot;</span>
+        <span>1,172 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/hanboost/t1-laser-engraver" target="_blank" rel="noopener noreferrer" data-tag="Product Design" data-keyword="hanboost t1 palm size laser engraver for diy enthusiast hanboost t1 palm size laser engraver for diy enthusiast kickstarter hanboost 手掌大小的迷你激光雕刻机，专为小型创意项目、个性化礼品、制造商标签和精选工艺材料而设计 product design sheridan, wy 手掌大小的迷你激光雕刻机，专为小型创意项目、个性化礼品、制造商标签和精选工艺材料而设计 product design sheridan, wy">
+    <div class="crowd-rank">14</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/532/280/b7406390b67e4ed9c69f4d73a624df06_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1784809505&amp;width=352&amp;sig=I9dqMTisNSkSYYq3OuqC7j4zc1F%2BJE7MuVoicPH6Kms%3D" alt="Hanboost T1 Palm Size Laser Engraver for DIY Enthusiast" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="Hanboost T1 手掌大小激光雕刻机，适合 DIY 爱好者">Hanboost T1 Palm Size Laser Engraver for DIY Enthusiast</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">Hanboost</span>
+        <span class="crowd-tag hint" data-zh="产品设计">Product Design</span>
+        <span class="crowd-tag hint" data-zh="怀俄明州谢里登">Sheridan, WY</span>
+      </div>
+      <p class="crowd-blurb">手掌大小的迷你激光雕刻机，专为小型创意项目、个性化礼品、制造商标签和精选工艺材料而设计</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">20,412%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 1 天</span>
+        <span class="sep">&middot;</span>
+        <span>6,678 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/fantasydesigns/spoolara" target="_blank" rel="noopener noreferrer" data-tag="3D Printing" data-keyword="spoolara - the 3d printing suite spoolara - the 3d printing suite kickstarter fantasydesigns 适用于所有事物 3d 打印 3d printing new york, ny 适用于所有事物 3d 打印 3d printing new york, ny">
+    <div class="crowd-rank">15</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/361/440/6d5ff9309d0820c0e63b9c7d6586cc5c_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1783434501&amp;width=352&amp;sig=IHqdMAKZJNGWOoH%2B7zAMGAghpk3G84y56LXh%2F5n2JEs%3D" alt="Spoolara - The 3D Printing Suite" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="Spoolara - 3D 打印套件">Spoolara - The 3D Printing Suite</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">FantasyDesigns</span>
+        <span class="crowd-tag hint" data-zh="3D打印">3D Printing</span>
+        <span class="crowd-tag hint" data-zh="纽约州纽约市">New York, NY</span>
+      </div>
+      <p class="crowd-blurb">适用于所有事物 3D 打印</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">1,553%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 29 天</span>
+        <span class="sep">&middot;</span>
+        <span>577 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/mythworks/the-wildsea-sourdown" target="_blank" rel="noopener noreferrer" data-tag="TTRPG" data-keyword="the wildsea: sourdown the wildsea: sourdown kickstarter mythworks 再次冒险进入狂野海的波浪，这一次是来到传说中的泽利克拉的故乡：sourdown。 ttrpg st. louis, mo 再次冒险进入狂野海的波浪，这一次是来到传说中的泽利克拉的故乡：sourdown。 ttrpg st. louis, mo">
+    <div class="crowd-rank">16</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/510/567/25ba0857816e38ab7499dc59e95e3894_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1784657249&amp;width=352&amp;sig=QuiDT4ZpdsAIINX8qUpBeTRxRCnYurUw1NWbaMgnGNg%3D" alt="The Wildsea: Sourdown" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="狂野之海：酸味">The Wildsea: Sourdown</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">Mythworks</span>
+        <span class="crowd-tag hint" data-zh="TTRPG">TTRPG</span>
+        <span class="crowd-tag hint" data-zh="密苏里州圣路易斯">St. Louis, MO</span>
+      </div>
+      <p class="crowd-blurb">再次冒险进入狂野海的波浪，这一次是来到传说中的泽利克拉的故乡：Sourdown。</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">315%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 19 天</span>
+        <span class="sep">&middot;</span>
+        <span>1,075 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/shargetech/disk-pro-2" target="_blank" rel="noopener noreferrer" data-tag="Gadgets" data-keyword="disk pro 2丨ultimate choice cooling hub for edc devices disk pro 2丨ultimate choice cooling hub for edc devices kickstarter sharge tech 6端口丨冰暴散热器丨磁力吸附丨袖珍尺寸丨4个控制芯片丨最大8tb|可插拔ssd 丨10gbps丨hdmi 2.1丨挂绳 gadgets new york, ny 6端口丨冰暴散热器丨磁力吸附丨袖珍尺寸丨4个控制芯片丨最大8tb|可插拔ssd 丨10gbps丨hdmi 2.1丨挂绳 gadgets new york, ny">
+    <div class="crowd-rank">17</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/293/876/fa4c839076f59d43167bf7b37eb871a6_original.jpg?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1782879397&amp;width=352&amp;sig=6evinxcrMzkhLY45lI1fCkbrk9vRlYsRVqOiukKwxR4%3D" alt="Disk Pro 2丨Ultimate Choice Cooling Hub for EDC Devices" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="Disk Pro 2丨EDC设备散热集线器的终极选择">Disk Pro 2丨Ultimate Choice Cooling Hub for EDC Devices</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">Sharge Tech</span>
+        <span class="crowd-tag hint" data-zh="小工具">Gadgets</span>
+        <span class="crowd-tag hint" data-zh="纽约州纽约市">New York, NY</span>
+      </div>
+      <p class="crowd-blurb">6端口丨冰暴散热器丨磁力吸附丨袖珍尺寸丨4个控制芯片丨最大8TB|可插拔SSD 丨10Gbps丨HDMI 2.1丨挂绳</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">9,523%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 24 天</span>
+        <span class="sep">&middot;</span>
+        <span>4,834 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/chadelkins/tigris-and-euphrates" target="_blank" rel="noopener noreferrer" data-tag="Tabletop Games" data-keyword="tigris and euphrates, lobby snacks, payback club, &amp; imports! tigris and euphrates, lobby snacks, payback club, &amp; imports! kickstarter chad elkins 期待已久的经典 reiner knizia 游戏以 ian o&#039;toole 的艺术作品回归。还有大堂小吃、回报俱乐部等等，等您探索！ tabletop games atlanta, ga 期待已久的经典 reiner knizia 游戏以 ian o&#039;toole 的艺术作品回归。还有大堂小吃、回报俱乐部等等，等您探索！ tabletop games atlanta, ga">
+    <div class="crowd-rank">18</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/452/900/80ad367bcc19771e8a8980114d8facc5_original.jpg?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1784167432&amp;width=352&amp;sig=v7xVl0l7mVyEuOPv%2BBx4ln1gqZoRm7keMQ20mrbWlUA%3D" alt="Tigris and Euphrates, Lobby Snacks, Payback Club, &amp; Imports!" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="底格里斯河和幼发拉底河、大堂小吃、回报俱乐部和进口！">Tigris and Euphrates, Lobby Snacks, Payback Club, &amp; Imports!</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">Chad Elkins</span>
+        <span class="crowd-tag hint" data-zh="桌面游戏">Tabletop Games</span>
+        <span class="crowd-tag hint" data-zh="佐治亚州亚特兰大">Atlanta, GA</span>
+      </div>
+      <p class="crowd-blurb">期待已久的经典 Reiner Knizia 游戏以 Ian O&#039;Toole 的艺术作品回归。还有大堂小吃、回报俱乐部等等，等您探索！</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">4,783%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 8 天</span>
+        <span class="sep">&middot;</span>
+        <span>6,024 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/postmarkgames/master-of-coin" target="_blank" rel="noopener noreferrer" data-tag="Tabletop Games" data-keyword="master of coin master of coin kickstarter postmark games 翻转硬币来管理刚刚起步的幻想王国的命运。你能平衡账目并加冕为货币大师吗？ tabletop games oxfordshire, uk 翻转硬币来管理刚刚起步的幻想王国的命运。你能平衡账目并加冕为货币大师吗？ tabletop games oxfordshire, uk">
+    <div class="crowd-rank">19</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/053/989/227/6d60c9867cb187d950a4b965a2c9c2c1_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1780585420&amp;width=352&amp;sig=aiAo9PY43EXUHD1%2F3AhYHsGo1aCI2FWj3vAX9XOpjSI%3D" alt="Master of Coin" loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="钱币大师">Master of Coin</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">Postmark Games</span>
+        <span class="crowd-tag hint" data-zh="桌面游戏">Tabletop Games</span>
+        <span class="crowd-tag hint" data-zh="英国牛津郡">Oxfordshire, UK</span>
+      </div>
+      <p class="crowd-blurb">翻转硬币来管理刚刚起步的幻想王国的命运。你能平衡账目并加冕为货币大师吗？</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">559%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 10 天</span>
+        <span class="sep">&middot;</span>
+        <span>1,105 人支持</span>
+      </div>
+    </div>
+  </a><a class="crowd-item filter-item" href="https://www.kickstarter.com/projects/cladist/cladist-titan-15-1-torque-redefines-power-and-precision" target="_blank" rel="noopener noreferrer" data-tag="Product Design" data-keyword="cladist titan: sorry, old driver. the guesswork era is over. cladist titan: sorry, old driver. the guesswork era is over. kickstarter cladist 15+1 扭矩级别 | 0.05–0.8 n·m 精度控制 |低跳动|电动手动双模式 |磁存储| 48 位 | 500毫安时 product design new york, ny 15+1 扭矩级别 | 0.05–0.8 n·m 精度控制 |低跳动|电动手动双模式 |磁存储| 48 位 | 500毫安时 product design new york, ny">
+    <div class="crowd-rank">20</div>
+    <div class="crowd-thumb"><img src="https://i.kickstarter.com/assets/054/355/273/2b15cabbc7615e98b7a885fad27a18f1_original.png?anim=false&amp;fit=cover&amp;gravity=auto&amp;height=198&amp;origin=ugc&amp;q=92&amp;v=1783394272&amp;width=352&amp;sig=bvuS4iUlpgTv9gm0Sf40HX%2FjTH9hBwHfBjTCS3Tvf%2FA%3D" alt="Cladist Titan: Sorry, Old Driver. The Guesswork Era Is Over." loading="lazy"></div>
+    <div class="crowd-body">
+      <div class="crowd-title"><span class="hint" data-zh="Cladist Titan：对不起，老司机。猜测时代已经结束。">Cladist Titan: Sorry, Old Driver. The Guesswork Era Is Over.</span></div>
+      <div class="crowd-meta-line">
+        <span class="crowd-creator">Cladist</span>
+        <span class="crowd-tag hint" data-zh="产品设计">Product Design</span>
+        <span class="crowd-tag hint" data-zh="纽约州纽约市">New York, NY</span>
+      </div>
+      <p class="crowd-blurb">15+1 扭矩级别 | 0.05–0.8 N·m 精度控制 |低跳动|电动手动双模式 |磁存储| 48 位 | 500毫安时</p>
+      <div class="crowd-stats">
+        <span class="crowd-fund"><span class="fund-bar"><span class="fund-bar-fill" style="width:100%;"></span></span><span class="pct">7,956%</span></span>
+        <span class="sep">&middot;</span>
+        <span>剩余 21 天</span>
+        <span class="sep">&middot;</span>
+        <span>1,828 人支持</span>
+      </div>
+    </div>
+  </a>
+    </div>
+  </section>
+  </main>
+  
+  <script>
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = {
+      design: document.getElementById('panel-design'),
+      biz: document.getElementById('panel-biz'),
+      plugin: document.getElementById('panel-plugin'),
+      crowd: document.getElementById('panel-crowd')
+    };
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const key = tab.dataset.section;
+        tabs.forEach(item => item.classList.remove('active'));
+        tab.classList.add('active');
+        Object.keys(panels).forEach(section => panels[section].classList.toggle('active', section === key));
+      });
+    });
+
+    document.querySelectorAll('.panel').forEach(panel => {
+      const sourceFilter = panel.querySelector('.source-filter');
+      const dateFilter = panel.querySelector('.date-filter');
+      const tagFilter = panel.querySelector('.tag-filter');
+      const keywordFilter = panel.querySelector('.keyword-filter');
+      const searchButton = panel.querySelector('.search-button');
+      const isPaginated = panel.dataset.paginated === 'true';
+      const pageSize = Number(panel.dataset.pageSize || 12);
+      const pager = panel.querySelector('.pager');
+      const pagerStatus = panel.querySelector('.pager-status');
+      const prevButton = panel.querySelector('.pager-prev');
+      const nextButton = panel.querySelector('.pager-next');
+      let page = 1;
+
+      function applyFilters() {
+        page = 1;
+        renderFilteredItems();
+      }
+
+      function matchesFilters(item) {
+        const source = sourceFilter ? sourceFilter.value : '';
+        const date = dateFilter ? dateFilter.value : '';
+        const tag = tagFilter ? tagFilter.value : '';
+        const keyword = keywordFilter ? keywordFilter.value.trim().toLowerCase() : '';
+
+        const matchesSource = !source || item.dataset.source === source;
+        const matchesDate = !date || item.dataset.date === date;
+        const matchesTag = !tag || (item.dataset.tag || '').split('|').includes(tag);
+        const matchesKeyword = !keyword || (item.dataset.keyword || '').includes(keyword);
+        return matchesSource && matchesDate && matchesTag && matchesKeyword;
+      }
+
+      function renderFilteredItems() {
+        const items = Array.from(panel.querySelectorAll('.filter-item'));
+        const matchedItems = items.filter(matchesFilters);
+        const totalPages = isPaginated ? Math.max(1, Math.ceil(matchedItems.length / pageSize)) : 1;
+        page = Math.min(page, totalPages);
+        const start = (page - 1) * pageSize;
+        const pageItems = new Set(isPaginated ? matchedItems.slice(start, start + pageSize) : matchedItems);
+
+        items.forEach(item => {
+          item.classList.toggle('is-hidden', !pageItems.has(item));
+        });
+
+        panel.querySelectorAll('.date-group').forEach(group => {
+          const visible = Array.from(group.querySelectorAll('.filter-item')).some(item => !item.classList.contains('is-hidden'));
+          group.classList.toggle('is-hidden', !visible);
+        });
+
+        if (pager) {
+          pager.classList.toggle('is-hidden', !isPaginated || matchedItems.length <= pageSize);
+          if (pagerStatus) pagerStatus.textContent = matchedItems.length ? page + ' / ' + totalPages + ' - ' + matchedItems.length + ' items' : '0 / 0 - 0 items';
+          if (prevButton) prevButton.disabled = page <= 1;
+          if (nextButton) nextButton.disabled = page >= totalPages;
+        }
+      }
+
+      [sourceFilter, dateFilter, tagFilter].forEach(control => {
+        if (control) control.addEventListener('change', applyFilters);
+      });
+      if (keywordFilter) {
+        keywordFilter.addEventListener('keydown', event => {
+          if (event.key === 'Enter') applyFilters();
+        });
+      }
+      if (searchButton) searchButton.addEventListener('click', applyFilters);
+      if (prevButton) {
+        prevButton.addEventListener('click', () => {
+          page = Math.max(1, page - 1);
+          renderFilteredItems();
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      }
+      if (nextButton) {
+        nextButton.addEventListener('click', () => {
+          page += 1;
+          renderFilteredItems();
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      }
+      renderFilteredItems();
+    });
+
+  </script>
+</body>
+</html>
