@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>哇咔咔每日推送</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div class="masthead">
+    <div class="masthead-top">
+      <div>
+        <div class="brand-mark" data-page-title>哇咔咔每日推送</div>
+        <div class="brand-sub" data-page-subtitle>Daily Dispatch - 设计资讯 / 商业快讯 / 插件趋势 / 众筹趋势</div>
+      </div>
+      <div class="masthead-right">
+        <div class="today-date mono" data-generated-date></div>
+      </div>
+    </div>
+    <hr class="masthead-rule">
+    <div class="today-strip" data-stats></div>
+  </div>
+  <nav class="section-nav" id="section-nav"></nav>
+  <main>
+    <p class="empty-state">Loading dispatch...</p>
+  </main>
+  <div id="failures"></div>
+  <script src="data/articles.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
